@@ -1,7 +1,7 @@
 import './App.css';
 import { Link } from "react-router-dom";
 
-import Chart from "./components/chart";
+import Stats from "./components/stats";
 import React, { useState, useEffect } from 'react';
 
 function App() {
@@ -15,7 +15,7 @@ function App() {
 
       <div className="container-fluid">
         <div className='row align-items-center'>
-          <Chart />
+          <Stats />
         </div>
       </div>
     </>

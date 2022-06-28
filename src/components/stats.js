@@ -1,35 +1,38 @@
-import React, { useState, useEffect }  from 'react'
+import React, { useState, useEffect, useRef }  from 'react'
 import { useForm } from "react-hook-form";
 import axios from 'axios';
 import moment from 'moment';
+import Chart from 'chart.js/auto';
+import _ from 'lodash';
 
 const API_BASE_URL = "http://127.0.0.1:3000/api/v1"
 const defaultFromDate = moment().format("YYYY-MM-DDT00:00");
-const defaultToDate = moment().format("YYYY-MM-DDTh:mm");
+const defaultToDate = moment().format("YYYY-MM-DDThh:mm");
+console.log(defaultToDate)
 
-function getMetris() {
-  return axios.get(API_BASE_URL + "/metrics").then((response) => response.data);
+function getStats(params) {
+  return axios.get(API_BASE_URL + "/stats", {params}).then((response) => response.data);
 }
 
-function getMetrisNames() {
+function getMetricNames() {
   return axios.get(API_BASE_URL + "/metric_names").then((response) => response.data);
 }
 
-function Chart(props) {
+function Stats(props) {
   const [metricNames, setMetricNames] = useState(["all"]);
   const [loadingMetricNames, setLoadingMetricNames] = useState(true);
 
   useEffect(() => {
     setLoadingMetricNames(true);
 
-    getMetrisNames().then((names) => {
-      const newMetricNames = [...metricNames, ...names]
-      setMetricNames(newMetricNames);
+    getMetricNames().then((names) => {
+      // TODO: Something is causing re-render and thus loading of names happening twice, forcing me to use `_.uniq' here
+      setMetricNames((prevMetricNames) => _.uniq([...names, ...prevMetricNames]));
       setLoadingMetricNames(false);
     })
   }, []);
 
-  const [metrics, setMetrics] = useState([]);
+  const [stats, setStats] = useState([]);
   const [loadingGraph, setLoadingGraph] = useState(true);
 
 
@@ -37,17 +40,51 @@ function Chart(props) {
   const onSubmit = (formData) => {
     setLoadingGraph(true);
 
-    getMetris().then((items) => {
-      setMetrics(items);
+    getStats(formData).then((items) => {
+      setStats(items);
       setLoadingGraph(false)
     })
   };
 
-  useEffect(() => {
-    metrics.map((metric) => {
+  // TODO: Extract chart into a standlone component rather than grabbing it with a ref and doing nasty stuff to it.
+  const chartEl = useRef(null);
 
-    })
-  }, [metrics]);
+  useEffect(() => {
+    console.log(stats);
+    let _stats = _.groupBy(stats, (stat) => stat.name);
+
+    let dataSets = []
+    for (let key in _stats) {
+      let dataSet = {
+        label: key,
+        backgroundColor: Math.floor(Math.random()*16777215).toString(16),
+        data: _stats[key]
+      }
+      dataSets.push(dataSet);
+    }
+
+    console.log(dataSets);
+    let chart = chartEl.current.getContext("2d");
+
+    let myChart = new Chart(chart, {
+      type: 'line',
+      options: {
+        scales: {
+          x: {
+            beginAtZero: true,
+            type: "linear"
+          }
+        }
+      },
+      data: {
+        datasets: dataSets
+      }
+    });
+
+    return () => {
+      myChart.destroy()
+    }
+  }, [stats]);
 
   return (
     <>
@@ -74,9 +111,9 @@ function Chart(props) {
           </div>
 
           <div className='col'>
-            <label htmlFor="avg_criteria" className="form-label">Average By</label>
-            <select className="form-select" id="avg_criteria" defaultValue="minute"
-              {...register("avgCriteria", { required: true })}>
+            <label htmlFor="by" className="form-label">Average By</label>
+            <select className="form-select" id="by" defaultValue="minute"
+              {...register("by", { required: true })}>
               <option value="minute">minute</option>
               <option value="hour">hour</option>
               <option value="day">day</option>
@@ -94,11 +131,11 @@ function Chart(props) {
       </form>
 
 
-      <div className="graph">
-        {loadingGraph === true ? (<p>Loading...</p>) : (<p>Loaded</p>)}
+      <div className="container-fluid chart-container">
+        <canvas id="chart" ref={chartEl} width="250" height="250" aria-label="Hello ARIA World" role="img"></canvas>
       </div>
     </>
   )
 }
 
-export default Chart
+export default Stats
