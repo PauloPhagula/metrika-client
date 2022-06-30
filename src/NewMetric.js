@@ -42,7 +42,7 @@ function NewMetric() {
       {submittedSuccessfuly && <Navigate to="/" replace={true} />}
 
       <div className="container">
-        <div className="row justify-content-md-center">
+        <div className="row justify-content-center">
           <form className="form col-4" onSubmit={handleSubmit(onSubmit)}>
 
             <div className="mb-3">
@@ -72,8 +72,8 @@ function NewMetric() {
               <div id="timepointHelp" className="form-text">When was it measured.</div>
             </div>
 
-            <div className="mb-3">
-              <button type="submit" className="btn btn-primary d-block" id="refreshButton">
+            <div className="mb-3 mt-4 d-flex justify-content-center">
+              <button type="submit" className="btn btn-primary d-block" id="saveButton">
                   <i className="bi bi-plus" role="img" aria-label="Save"></i> Save
                 </button>
             </div>
