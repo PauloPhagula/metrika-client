@@ -8,7 +8,6 @@ import _ from 'lodash';
 const API_BASE_URL = "http://127.0.0.1:3000/api/v1"
 const defaultFromDate = moment().format("YYYY-MM-DDT00:00");
 const defaultToDate = moment().format("YYYY-MM-DDThh:mm");
-console.log(defaultToDate)
 
 function getStats(params) {
   return axios.get(API_BASE_URL + "/stats", {params}).then((response) => response.data);
@@ -26,7 +25,7 @@ function Stats(props) {
     setLoadingMetricNames(true);
 
     getMetricNames().then((names) => {
-      // TODO: Something is causing re-render and thus loading of names happening twice, forcing me to use `_.uniq' here
+      // TODO: Something is causing re-render and thus loading of names happening twice, forcing me to use `_.uniq' here,
       setMetricNames((prevMetricNames) => _.uniq([...names, ...prevMetricNames]));
       setLoadingMetricNames(false);
     })
@@ -37,6 +36,7 @@ function Stats(props) {
 
 
   const {register, handleSubmit} = useForm()
+
   const onSubmit = (formData) => {
     setLoadingGraph(true);
 
@@ -50,7 +50,6 @@ function Stats(props) {
   const chartEl = useRef(null);
 
   useEffect(() => {
-    console.log(stats);
     let _stats = _.groupBy(stats, (stat) => stat.name);
 
     let dataSets = []
@@ -63,7 +62,6 @@ function Stats(props) {
       dataSets.push(dataSet);
     }
 
-    console.log(dataSets);
     let chart = chartEl.current.getContext("2d");
 
     let myChart = new Chart(chart, {
@@ -72,7 +70,15 @@ function Stats(props) {
         scales: {
           x: {
             beginAtZero: true,
-            type: "linear"
+            type: "linear",
+          }
+        },
+        plugins: {
+          legend: {
+              display: true,
+              labels: {
+                  color: 'rgb(255, 99, 132)'
+              }
           }
         }
       },
@@ -123,16 +129,15 @@ function Stats(props) {
           <div className="col">
             <label htmlFor="refreshButton" className="form-label">&nbsp;</label>
             <button type="submit" className="btn btn-primary d-block" id="refreshButton">
-              <i className="bi-arrow-clockwise" role="img" aria-label="GitHub"></i>
+              <i className="bi-arrow-clockwise" role="img" aria-label="Refresh"></i>
               Refresh
             </button>
           </div>
         </div>
       </form>
 
-
       <div className="container-fluid chart-container">
-        <canvas id="chart" ref={chartEl} width="250" height="250" aria-label="Hello ARIA World" role="img"></canvas>
+        <canvas id="chart" ref={chartEl} width="250" height="250" aria-label="Metric's Graph" role="img"></canvas>
       </div>
     </>
   )
