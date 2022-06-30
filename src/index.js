@@ -12,6 +12,8 @@ import './index.css';
 
 import App from './App';
 import NewMetric from './NewMetric';
+import Stats from './Stats';
+
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -19,8 +21,10 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App />} />
-        <Route path="/new" element={<NewMetric />} />
+        <Route path="/" element={<App />}>
+          <Route path="/dashboard" element={<Stats />} />
+          <Route path="/new" element={<NewMetric />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

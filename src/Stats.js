@@ -94,49 +94,53 @@ function Stats(props) {
 
   return (
     <>
-      <form className="form" onSubmit={handleSubmit(onSubmit)}>
-        <div className="row">
+      <div className="container">
+        <div className='row'>
+          <form className="form" onSubmit={handleSubmit(onSubmit)}>
+            <div className="row">
 
-          <div className="col">
-            <label htmlFor="metric" className="form-label">Metric</label>
-            <select className="form-select"id="metric" defaultValue="all" {...register("metric", { required: true })}>
-              { metricNames.map((metric) => <option key={metric} value={metric}>{metric}</option>) }
-            </select>
-          </div>
+              <div className="col">
+                <label htmlFor="metric" className="form-label">Metric</label>
+                <select className="form-select"id="metric" defaultValue="all" {...register("metric", { required: true })}>
+                  { metricNames.map((metric) => <option key={metric} value={metric}>{metric}</option>) }
+                </select>
+              </div>
 
-          <div className='col'>
-            <label htmlFor="from" className="form-label">From</label>
-            <input type="datetime-local" id="from" className="form-control" defaultValue={defaultFromDate}
-              {...register("from", { required: true, max: defaultToDate })} />
-          </div>
+              <div className='col'>
+                <label htmlFor="from" className="form-label">From</label>
+                <input type="datetime-local" id="from" className="form-control" defaultValue={defaultFromDate}
+                  {...register("from", { required: true, max: defaultToDate })} />
+              </div>
 
-          <div className='col'>
-            <label htmlFor="to" className="form-label">To</label>
-            <input type="datetime-local" id="to" className="form-control" defaultValue={defaultToDate}
-              {...register("to", { required: true, max: defaultToDate})} />
-          </div>
+              <div className='col'>
+                <label htmlFor="to" className="form-label">To</label>
+                <input type="datetime-local" id="to" className="form-control" defaultValue={defaultToDate}
+                  {...register("to", { required: true, max: defaultToDate})} />
+              </div>
 
-          <div className='col'>
-            <label htmlFor="by" className="form-label">Average By</label>
-            <select className="form-select" id="by" defaultValue="minute"
-              {...register("by", { required: true })}>
-              <option value="minute">minute</option>
-              <option value="hour">hour</option>
-              <option value="day">day</option>
-            </select>
-          </div>
+              <div className='col'>
+                <label htmlFor="by" className="form-label">Average By</label>
+                <select className="form-select" id="by" defaultValue="minute"
+                  {...register("by", { required: true })}>
+                  <option value="minute">minute</option>
+                  <option value="hour">hour</option>
+                  <option value="day">day</option>
+                </select>
+              </div>
 
-          <div className="col">
-            <label htmlFor="refreshButton" className="form-label">&nbsp;</label>
-            <button type="submit" className="btn btn-primary d-block" id="refreshButton">
-              <i className="bi bi-arrow-clockwise" role="img" aria-label="Refresh"></i> Refresh
-            </button>
+              <div className="col">
+                <label htmlFor="refreshButton" className="form-label">&nbsp;</label>
+                <button type="submit" className="btn btn-primary d-block" id="refreshButton">
+                  <i className="bi bi-arrow-clockwise" role="img" aria-label="Refresh"></i> Refresh
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <div className="container-fluid chart-container">
+            <canvas id="chart" ref={chartEl} width="250" height="250" aria-label="Metric's Graph" role="img"></canvas>
           </div>
         </div>
-      </form>
-
-      <div className="container-fluid chart-container">
-        <canvas id="chart" ref={chartEl} width="250" height="250" aria-label="Metric's Graph" role="img"></canvas>
       </div>
     </>
   )
