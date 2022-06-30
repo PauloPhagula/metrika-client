@@ -13,7 +13,7 @@ import './index.css';
 
 import App from './App';
 import NewMetric from './NewMetric';
-import Stats from './Stats';
+import Dashboard from './Dashboard';
 
 import reportWebVitals from './reportWebVitals';
 
@@ -23,7 +23,7 @@ root.render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />}>
-          <Route path="/dashboard" element={<Stats />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/new" element={<NewMetric />} />
         </Route>
       </Routes>

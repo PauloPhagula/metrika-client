@@ -39,7 +39,7 @@ function NewMetric() {
 
   return (
     <>
-      {submittedSuccessfuly && <Navigate to="/dashboard" replace={true} />}
+      {submittedSuccessfuly && <Navigate to="/" replace={true} />}
 
       <div className="container">
         <div className="row justify-content-md-center">

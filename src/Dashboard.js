@@ -17,7 +17,7 @@ function getMetricNames() {
   return axios.get(API_BASE_URL + "/metric_names").then((response) => response.data);
 }
 
-function Stats(props) {
+function Dashboard(props) {
   const [metricNames, setMetricNames] = useState(["all"]);
   const [loadingMetricNames, setLoadingMetricNames] = useState(true);
 
@@ -152,4 +152,4 @@ function Stats(props) {
   )
 }
 
-export default Stats
+export default Dashboard
