@@ -137,8 +137,14 @@ function Stats(props) {
             </div>
           </form>
 
-          <div className="container-fluid chart-container">
-            <canvas id="chart" ref={chartEl} width="250" height="250" aria-label="Metric's Graph" role="img"></canvas>
+          <div className="container">
+            <div className="row justify-content-md-center">
+              <div className="col-4">
+                <div className="chart-container mt-2">
+                  <canvas id="chart" ref={chartEl} aria-label="Metric's Graph" role="img"></canvas>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

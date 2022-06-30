@@ -8,7 +8,7 @@ function App() {
 
   return (
     <>
-      <header className="p-3 navbar navbar-expand-lg bg-light">
+      <header className="navbar navbar-expand-lg bg-light mb-4 p-3">
           <nav className="container">
             <div className="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
               <span className="navbar-brand">
