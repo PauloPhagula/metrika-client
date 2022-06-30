@@ -129,8 +129,7 @@ function Stats(props) {
           <div className="col">
             <label htmlFor="refreshButton" className="form-label">&nbsp;</label>
             <button type="submit" className="btn btn-primary d-block" id="refreshButton">
-              <i className="bi-arrow-clockwise" role="img" aria-label="Refresh"></i>
-              Refresh
+              <i className="bi bi-arrow-clockwise" role="img" aria-label="Refresh"></i> Refresh
             </button>
           </div>
         </div>
