@@ -63,7 +63,7 @@ function NewMetric() {
 
       <div className="container">
         <div className="row justify-content-center">
-          <form className="form col-4" onSubmit={handleSubmit(onSubmit)}>
+          <form className="form col-12 col-lg-4" onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-3">
               <label htmlFor="name" className="form-label">
                 Name
