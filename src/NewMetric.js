@@ -4,8 +4,8 @@ import { Navigate } from 'react-router-dom'
 import axios from 'axios'
 import moment from 'moment'
 import _ from 'lodash';
+import config from './config'
 
-const API_BASE_URL = 'http://127.0.0.1:3000/api/v1'
 const defaultDate = moment().format('YYYY-MM-DDThh:mm')
 
 function NewMetric() {
@@ -18,14 +18,14 @@ function NewMetric() {
     }
 
     axios
-      .get(API_BASE_URL + "/metric_names")
+      .get(config.API_BASE_URL + "/metric_names")
       .then((response) => {
         setMetricNames((prevMetricNames) => _.uniq([...response.data, ...prevMetricNames]));
         setHasLoadedMetricNames(true);
       }).catch((err) => {
         // Swallow it. This request is not critical. It's data is just for suggestions.
       });
-  }, [metricNames, hasLoadedMetricNames]);
+  }, []);
 
   const [submittedSuccessfuly, setSubmittedSuccessfuly] = useState(null)
   const [showSubmitWarn, setShowSubmitWarn] = useState(false)
@@ -37,7 +37,7 @@ function NewMetric() {
     }
 
     axios
-      .post(API_BASE_URL + '/metrics', params)
+      .post(config.API_BASE_URL + '/metrics', params)
       .then((response) => {
         setSubmittedSuccessfuly(true)
       })

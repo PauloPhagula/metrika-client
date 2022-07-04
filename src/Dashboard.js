@@ -4,17 +4,17 @@ import axios from 'axios';
 import moment from 'moment';
 import Chart from 'chart.js/auto';
 import _ from 'lodash';
+import config from './config'
 
-const API_BASE_URL = "http://127.0.0.1:3000/api/v1"
 const defaultFromDate = moment().format("YYYY-MM-DDT00:00");
 const defaultToDate = moment().format("YYYY-MM-DDThh:mm");
 
 function getStats(params) {
-  return axios.get(API_BASE_URL + "/stats", {params}).then((response) => response.data);
+  return axios.get(config.API_BASE_URL + "/stats", {params}).then((response) => response.data);
 }
 
 function getMetricNames() {
-  return axios.get(API_BASE_URL + "/metric_names").then((response) => response.data);
+  return axios.get(config.API_BASE_URL + "/metric_names").then((response) => response.data);
 }
 
 function Dashboard(props) {
