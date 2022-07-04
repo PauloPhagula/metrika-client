@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import {useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import moment from 'moment'
+import { DateTime } from "luxon";
 import _ from 'lodash';
 import config from './config'
 
-const defaultDate = moment().format('YYYY-MM-DDThh:mm')
+const maxDate = `${DateTime.now().toFormat("yyyy-MM-dd")}T${DateTime.now().toFormat("T")}`;
 
 function NewMetric() {
   let navigate = useNavigate();
@@ -34,7 +34,7 @@ function NewMetric() {
   const [showSubmitWarn, setShowSubmitWarn] = useState(false)
   const [showSubmitSuccess, setShowSubmitSuccess] = useState(false)
 
-  const { register, handleSubmit } = useForm()
+  const { register, formState: { errors }, handleSubmit, reset } = useForm()
   const onSubmit = (formData) => {
     const params = {
       metric: { ...formData },
@@ -49,6 +49,12 @@ function NewMetric() {
         setSubmittedSuccessfully(false)
       })
   }
+
+  useEffect(() => {
+    if (submittedSuccessfully === true) {
+      reset({keepDefaultValues: true})
+    }
+  }, [submittedSuccessfully])
 
   useEffect(() => {
     var timer;
@@ -89,14 +95,18 @@ function NewMetric() {
                 className="form-control"
                 aria-describedby="nameHelp"
                 list="defaultMetricNames"
-                {...register('name', { required: true })}
+                {...register('name', { required: true, pattern: /^(\w)+$/ })}
               />
-              <div id="name" className="form-text">
+              <div id="nameHelp" className="form-text">
                 What was measured
               </div>
               <datalist id="defaultMetricNames">
-                {metricNames.map((name) => <option value={name} key={name} /> )}
+                {metricNames.map((name) => (
+                  <option value={name} key={name} />
+                ))}
               </datalist>
+              {errors.name?.type === "required" && <div className="invalid-feedback d-block">Metric name is required!</div>}
+              {errors.name?.type === "pattern" && <div className="invalid-feedback d-block">Metric name may contain word chars only</div>}
             </div>
 
             <div className="mb-3">
@@ -107,11 +117,14 @@ function NewMetric() {
                 type="number"
                 className="form-control"
                 aria-describedby="valueHelp"
-                {...register('metric_value', { required: true })}
+                {...register('metric_value', { required: true, min: 0, max: 100 })}
               />
-              <div id="valueHelps" className="form-text">
+              <div id="valueHelp" className="form-text">
                 How much it measured.
               </div>
+              {errors.metric_value?.type === "required" && <div className="invalid-feedback d-block">Metric value is required!</div>}
+              {errors.metric_value?.type === "min" && <div className="invalid-feedback d-block">Metric value min is 0!</div>}
+              {errors.metric_value?.type === "max" && <div className="invalid-feedback d-block">Metric value max is 100!</div>}
             </div>
 
             <div className="mb-3">
@@ -121,17 +134,19 @@ function NewMetric() {
               <input
                 type="datetime-local"
                 className="form-control"
-                aria-describedby="timepoint"
-                {...register('timepoint', { required: true, max: defaultDate })}
+                aria-describedby="timepointHelp"
+                {...register('timepoint', { required: true, max: maxDate })}
               />
               <div id="timepointHelp" className="form-text">
                 When was it measured.
               </div>
+              {errors.timepoint?.type === "required" && <div className="invalid-feedback d-block">Metric time is required!</div>}
+              {errors.timepoint?.type === "max" && <div className="invalid-feedback d-block">Metric time can't be in the future!</div>}
             </div>
 
             <div className="mb-3 mt-4 d-flex justify-content-center">
               <button type="submit" className="btn btn-primary d-block" id="saveButton">
-               <i className="bi bi-plus" role="img" aria-label="Save"></i> Save
+                <i className="bi bi-plus" role="img" aria-label="Save"></i> Save
               </button>
             </div>
 

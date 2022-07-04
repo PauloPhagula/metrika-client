@@ -1,49 +1,50 @@
 import React, { useState, useEffect, useRef }  from 'react'
 import { useForm } from "react-hook-form";
 import axios from 'axios';
-import moment from 'moment';
+import { DateTime } from "luxon";
 import Chart from 'chart.js/auto';
 import _ from 'lodash';
 import config from './config'
 
-const defaultFromDate = moment().format("YYYY-MM-DDT00:00");
-const defaultToDate = moment().format("YYYY-MM-DDThh:mm");
+function Dashboard() {
+  // Form date helpers
+  const defaultFromDate = `${DateTime.now().startOf("day").toFormat("yyyy-MM-dd")}T${DateTime.now().startOf("day").toFormat("T")}`
+  const defaultToDate = `${DateTime.now().minus({hour: 1}).toFormat("yyyy-MM-dd")}T${DateTime.now().minus({hour: 1}).toFormat("T")}`;
+  const maxDate = `${DateTime.now().toFormat("yyyy-MM-dd")}T${DateTime.now().toFormat("T")}`;
 
-function getStats(params) {
-  return axios.get(config.API_BASE_URL + "/stats", {params}).then((response) => response.data);
-}
-
-function getMetricNames() {
-  return axios.get(config.API_BASE_URL + "/metric_names").then((response) => response.data);
-}
-
-function Dashboard(props) {
   const [metricNames, setMetricNames] = useState(["all"]);
-  const [loadingMetricNames, setLoadingMetricNames] = useState(true);
 
   useEffect(() => {
-    setLoadingMetricNames(true);
-
-    getMetricNames().then((names) => {
-      // TODO: Something is causing re-render and thus loading of names happening twice, forcing me to use `_.uniq' here,
-      setMetricNames((prevMetricNames) => _.uniq([...names, ...prevMetricNames]));
-      setLoadingMetricNames(false);
-    })
+    axios
+      .get(config.API_BASE_URL + "/metric_names")
+      .then((response) => response.data)
+      .then((names) => {
+        // FIXME: Something is causing re-render and thus loading of names happens twice, forcing me to use `_.uniq' here,
+        setMetricNames((prevMetricNames) => _.uniq([...names, ...prevMetricNames]));
+      }).catch((err) => {
+        // FIXME: Handle err this request is critical for the component
+      })
   }, []);
 
   const [stats, setStats] = useState([]);
   const [loadingGraph, setLoadingGraph] = useState(true);
 
 
-  const {register, handleSubmit} = useForm()
+  const {register, formState: { errors }, handleSubmit, reset} = useForm()
 
   const onSubmit = (formData) => {
     setLoadingGraph(true);
 
-    getStats(formData).then((items) => {
-      setStats(items);
-      setLoadingGraph(false)
-    })
+    // HACK: See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#setting_timezones
+    formData.from = DateTime.fromISO(formData.from).toISO()
+    formData.to = DateTime.fromISO(formData.to).toISO()
+    axios
+      .get(config.API_BASE_URL + "/stats", {params: formData} )
+      .then((response) => response.data)
+      .then((items) => {
+        setStats(items);
+        setLoadingGraph(false)
+      })
   };
 
   // TODO: Extract chart into a standlone component rather than grabbing it with a ref and doing nasty stuff to it.
@@ -52,6 +53,7 @@ function Dashboard(props) {
   useEffect(() => {
     let _stats = _.groupBy(stats, (stat) => stat.name);
 
+    // TODO: Consider using useMemo
     let dataSets = []
     for (let key in _stats) {
       let dataSet = {
@@ -104,18 +106,24 @@ function Dashboard(props) {
                   <select className="form-select"id="metric" defaultValue="all" {...register("metric", { required: true })}>
                     { metricNames.map((metric) => <option key={metric} value={metric}>{metric}</option>) }
                   </select>
+                  {errors.metric?.type === "required" && <div className="invalid-feedback d-block">Metric is required!</div>}
                 </div>
 
                 <div className='col-12 col-lg-6 mb-3'>
                   <label htmlFor="from" className="form-label">From</label>
                   <input type="datetime-local" id="from" className="form-control" defaultValue={defaultFromDate}
-                    {...register("from", { required: true, max: defaultToDate })} />
+                    {...register("from", { required: true, max: maxDate })}
+                    />
+                    {errors.from?.type === "required" && <div className="invalid-feedback d-block">From is required!</div>}
+                    {errors.from?.type === "max" && <div className="invalid-feedback d-block">From time can't be in the future!</div>}
                 </div>
 
                 <div className='col-12 col-lg-6 mb-3'>
                   <label htmlFor="to" className="form-label">To</label>
                   <input type="datetime-local" id="to" className="form-control" defaultValue={defaultToDate}
-                    {...register("to", { required: true, max: defaultToDate})} />
+                    {...register("to", { required: true, max: maxDate})} />
+                  {errors.to?.type === "required" && <div className="invalid-feedback d-block">To is required!</div>}
+                  {errors.to?.type === "max" && <div className="invalid-feedback d-block">To time can't be in the future!</div>}
                 </div>
 
                 <div className='col-12 col-lg-12 mb-3'>
