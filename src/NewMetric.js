@@ -10,7 +10,7 @@ const defaultDate = moment().format('YYYY-MM-DDThh:mm')
 
 function NewMetric() {
   let navigate = useNavigate();
-  const [metricNames, setMetricNames] = useState(['all']);
+  const [metricNames, setMetricNames] = useState([]);
   const [hasLoadedMetricNames, setHasLoadedMetricNames] = useState(false);
 
   useEffect(() => {
