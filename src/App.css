@@ -1,3 +1,7 @@
 .nav-link.active {
   font-weight: bolder;
 }
+
+.factorial-link {
+  color: rgb(255, 53, 94);
+}
