@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { Navigate } from 'react-router-dom'
+import {useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import moment from 'moment'
 import _ from 'lodash';
@@ -9,6 +9,7 @@ import config from './config'
 const defaultDate = moment().format('YYYY-MM-DDThh:mm')
 
 function NewMetric() {
+  let navigate = useNavigate();
   const [metricNames, setMetricNames] = useState(['all']);
   const [hasLoadedMetricNames, setHasLoadedMetricNames] = useState(false);
 
@@ -19,16 +20,19 @@ function NewMetric() {
 
     axios
       .get(config.API_BASE_URL + "/metric_names")
-      .then((response) => {
-        setMetricNames((prevMetricNames) => _.uniq([...response.data, ...prevMetricNames]));
+      .then((response) => response.data)
+      .then((names) => {
+        // FIXME: Something is causing re-render and thus loading of names happening twice, forcing me to use `_.uniq' here,
+        setMetricNames((prevMetricNames) => _.uniq([...names, ...prevMetricNames]));
         setHasLoadedMetricNames(true);
       }).catch((err) => {
         // Swallow it. This request is not critical. It's data is just for suggestions.
       });
   }, []);
 
-  const [submittedSuccessfuly, setSubmittedSuccessfuly] = useState(null)
+  const [submittedSuccessfully, setSubmittedSuccessfully] = useState(null)
   const [showSubmitWarn, setShowSubmitWarn] = useState(false)
+  const [showSubmitSuccess, setShowSubmitSuccess] = useState(false)
 
   const { register, handleSubmit } = useForm()
   const onSubmit = (formData) => {
@@ -39,28 +43,40 @@ function NewMetric() {
     axios
       .post(config.API_BASE_URL + '/metrics', params)
       .then((response) => {
-        setSubmittedSuccessfuly(true)
+        setSubmittedSuccessfully(true)
       })
       .catch((err) => {
-        setSubmittedSuccessfuly(false)
+        setSubmittedSuccessfully(false)
       })
   }
 
   useEffect(() => {
-    if (submittedSuccessfuly === false) {
+    var timer;
+
+    if (submittedSuccessfully == null) {
+      return;
+    }
+
+    if (submittedSuccessfully === false) {
       setShowSubmitWarn(true)
+      setShowSubmitSuccess(false)
     } else {
       setShowSubmitWarn(false)
+      setShowSubmitSuccess(true)
+      timer = setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 3000);
     }
+
     return () => {
       setShowSubmitWarn(false)
+      setShowSubmitSuccess(false)
+      clearTimeout(timer)
     }
-  }, [submittedSuccessfuly])
+  }, [submittedSuccessfully])
 
   return (
     <>
-      {submittedSuccessfuly && <Navigate to="/" replace={true} />}
-
       <div className="container">
         <div className="row justify-content-center">
           <form className="form col-12 col-lg-4" onSubmit={handleSubmit(onSubmit)}>
@@ -122,6 +138,14 @@ function NewMetric() {
             {showSubmitWarn ? (
               <div className="alert alert-warning" role="alert">
                 An error happened submit this metric. Please try again!
+              </div>
+            ) : (
+              <span />
+            )}
+
+            {showSubmitSuccess === true ? (
+              <div className="alert alert-success" role="alert">
+                Metric submitted successfully. Redirecting to the dashboard ...
               </div>
             ) : (
               <span />
