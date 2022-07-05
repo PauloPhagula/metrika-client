@@ -9,23 +9,21 @@ import config from './config'
 const maxDate = `${DateTime.now().toFormat("yyyy-MM-dd")}T${DateTime.now().toFormat("T")}`;
 
 function NewMetric() {
-  let navigate = useNavigate();
+  const navigate = useNavigate();
   const [metricNames, setMetricNames] = useState([]);
-  const [hasLoadedMetricNames, setHasLoadedMetricNames] = useState(false);
 
   useEffect(() => {
-    if (hasLoadedMetricNames === true) {
+    if (! _.isEmpty(metricNames)) {
       return;
     }
 
     axios
-      .get(config.API_BASE_URL + "/metric_names")
-      .then((response) => response.data)
-      .then((names) => {
+      .get(config.API_BASE_URL + "/metric_names" )
+      .then((response) => {
         // FIXME: Something is causing re-render and thus loading of names happening twice, forcing me to use `_.uniq' here,
-        setMetricNames((prevMetricNames) => _.uniq([...names, ...prevMetricNames]));
-        setHasLoadedMetricNames(true);
-      }).catch((error) => {
+        setMetricNames((prevMetricNames) => _.uniq([...response.data, ...prevMetricNames]));
+      })
+      .catch((error) => {
         // Swallow it. This request is not critical. It's data is just for suggestions.
       });
   }, []);
