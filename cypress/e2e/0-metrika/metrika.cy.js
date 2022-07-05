@@ -64,10 +64,10 @@ describe("metrika app", () => {
 
     cy.wait(500)
 
-    cy.get("#chart")
+    cy.get("#reactgooglegraph-1")
       .should("be.visible")
       .and($chart => {
-        expect($chart.height()).to.be.greaterThan(200)
-    })
+        expect($chart.height()).to.be.at.least(200)
+      })
   })
 })
