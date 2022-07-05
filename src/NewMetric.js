@@ -25,7 +25,7 @@ function NewMetric() {
         // FIXME: Something is causing re-render and thus loading of names happening twice, forcing me to use `_.uniq' here,
         setMetricNames((prevMetricNames) => _.uniq([...names, ...prevMetricNames]));
         setHasLoadedMetricNames(true);
-      }).catch((err) => {
+      }).catch((error) => {
         // Swallow it. This request is not critical. It's data is just for suggestions.
       });
   }, []);
@@ -45,7 +45,7 @@ function NewMetric() {
       .then((response) => {
         setSubmittedSuccessfully(true)
       })
-      .catch((err) => {
+      .catch((error) => {
         setSubmittedSuccessfully(false)
       })
   }

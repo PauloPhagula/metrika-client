@@ -20,6 +20,7 @@ function Dashboard() {
   //
 
   const [metricNames, setMetricNames] = useState(["all"]);
+  const [showFetchingNamesWarn, setShowFetchingNamesWarn] = useState(false)
 
   useEffect(() => {
     axios
@@ -28,8 +29,9 @@ function Dashboard() {
       .then((names) => {
         // FIXME: Something is causing re-render and thus loading of names happens twice, forcing me to use `_.uniq' here,
         setMetricNames((prevMetricNames) => _.uniq([...names, ...prevMetricNames]));
-      }).catch((err) => {
-        // FIXME: Handle err this request is critical for the component
+        setShowFetchingNamesWarn(false)
+      }).catch((error) => {
+        setShowFetchingNamesWarn(true)
       })
   }, []);
 
@@ -38,8 +40,8 @@ function Dashboard() {
   //
 
   const [stats, setStats] = useState([]);
-
   const {register, formState: { errors }, handleSubmit} = useForm()
+  const [showSubmitWarn, setShowSubmitWarn] = useState(false)
 
   const onSubmit = (formData) => {
     // HACK: See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#setting_timezones
@@ -49,7 +51,11 @@ function Dashboard() {
       .get(config.API_BASE_URL + "/stats", {params: formData} )
       .then((response) => response.data)
       .then((items) => {
+        setShowSubmitWarn(false)
         setStats(items);
+      })
+      .catch((error) => {
+        setShowSubmitWarn(true)
       })
   };
 
@@ -139,6 +145,16 @@ function Dashboard() {
                     { metricNames.map((metric) => <option key={metric} value={metric}>{metric}</option>) }
                   </select>
                   {errors.metric?.type === "required" && <div className="invalid-feedback d-block">Metric is required!</div>}
+
+                  {showFetchingNamesWarn ? (
+                    <div className="col-12 mt-2">
+                      <div className="alert alert-warning" role="alert">
+                        An error happened while fetching metric names for the from. Please reload the page!
+                      </div>
+                    </div>
+                  ) : (
+                    <span />
+                  )}
                 </div>
 
                 <div className='col-12 col-lg-6 mb-3'>
@@ -173,6 +189,16 @@ function Dashboard() {
                     <i className="bi bi-arrow-clockwise" role="img" aria-label="Refresh"></i> Refresh
                   </button>
                 </div>
+
+                {showSubmitWarn ? (
+                  <div className="col-12">
+                    <div className="alert alert-warning" role="alert">
+                      An error happened while fetching stats. Please review your filters and try again!
+                    </div>
+                  </div>
+                ) : (
+                  <span />
+                )}
               </div>
             </form>
           </div>
