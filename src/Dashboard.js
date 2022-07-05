@@ -1,16 +1,23 @@
-import React, { useState, useEffect, useRef }  from 'react'
+import React, { useState, useEffect, useRef, useLayoutEffect }  from 'react'
 import { useForm } from "react-hook-form";
 import axios from 'axios';
 import { DateTime } from "luxon";
-import Chart from 'chart.js/auto';
 import _ from 'lodash';
+import { Chart } from "react-google-charts";
 import config from './config'
 
 function Dashboard() {
+  //
   // Form date helpers
+  //
+
   const defaultFromDate = `${DateTime.now().startOf("day").toFormat("yyyy-MM-dd")}T${DateTime.now().startOf("day").toFormat("T")}`
   const defaultToDate = `${DateTime.now().minus({hour: 1}).toFormat("yyyy-MM-dd")}T${DateTime.now().minus({hour: 1}).toFormat("T")}`;
   const maxDate = `${DateTime.now().toFormat("yyyy-MM-dd")}T${DateTime.now().toFormat("T")}`;
+
+  //
+  // Metric names for form
+  //
 
   const [metricNames, setMetricNames] = useState(["all"]);
 
@@ -26,15 +33,15 @@ function Dashboard() {
       })
   }, []);
 
+  //
+  // Fetch stats
+  //
+
   const [stats, setStats] = useState([]);
-  const [loadingGraph, setLoadingGraph] = useState(true);
 
-
-  const {register, formState: { errors }, handleSubmit, reset} = useForm()
+  const {register, formState: { errors }, handleSubmit} = useForm()
 
   const onSubmit = (formData) => {
-    setLoadingGraph(true);
-
     // HACK: See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#setting_timezones
     formData.from = DateTime.fromISO(formData.from).toISO()
     formData.to = DateTime.fromISO(formData.to).toISO()
@@ -43,56 +50,81 @@ function Dashboard() {
       .then((response) => response.data)
       .then((items) => {
         setStats(items);
-        setLoadingGraph(false)
       })
   };
 
-  // TODO: Extract chart into a standlone component rather than grabbing it with a ref and doing nasty stuff to it.
-  const chartEl = useRef(null);
+  //
+  // Data crunchying
+  //
+
+  const [chartData, setChartData] = useState([])
 
   useEffect(() => {
-    let _stats = _.groupBy(stats, (stat) => stat.name);
-
-    // TODO: Consider using useMemo
-    let dataSets = []
-    for (let key in _stats) {
-      let dataSet = {
-        label: key,
-        backgroundColor: Math.floor(Math.random()*16777215).toString(16),
-        data: _stats[key]
-      }
-      dataSets.push(dataSet);
+    if (stats.length === 0) {
+      return;
     }
 
-    let chart = chartEl.current.getContext("2d");
+    // TODO: Posssibly use useMemo and useTransition here
 
-    let myChart = new Chart(chart, {
-      type: 'line',
-      options: {
-        scales: {
-          x: {
-            beginAtZero: true,
-            type: "linear",
-          }
-        },
-        plugins: {
-          legend: {
-              display: true,
-              labels: {
-                  color: 'rgb(255, 99, 132)'
-              }
-          }
+    let rows = []
+    let names = _.map(_.uniqBy(stats, (stat) => stat.name), (value) => value.name)
+    let zeroes =  _.fill([...names], 0)
+
+    let statsByX = _.groupBy(stats, (stat) => stat.x)
+    _.map(statsByX, (xStat, xStatkey) => {
+      let row = _.zipObject(names, zeroes)
+      row.x = xStatkey;
+      for (let name of names) {
+        let found = _.find(xStat, (o) => o.name === name);
+
+        if (found) {
+          row[name] = found.y
+        } else {
+          row[name] = 0
         }
-      },
-      data: {
-        datasets: dataSets
       }
-    });
 
-    return () => {
-      myChart.destroy()
+      rows.push(row)
+    })
+
+    let newNames = ["x", ...names];
+    let dataset = _.map(rows, (row) => {
+      let result = [];
+
+      result.push(row.x)
+      for (let name of names) {
+        result.push(row[name])
+      }
+      return result
+    })
+
+    let _googleData = [newNames, ...dataset]
+    setChartData(_googleData);
+
+  }, [stats])
+
+  //
+  // Chart sizing
+  //
+
+  const chartContainerRef = useRef(null)
+  const [chartSize, setChartSize] = useState([0, 0]);
+  useLayoutEffect(() => {
+    function resizeChart() {
+      if (chartContainerRef.current === null) {
+        return;
+      } else {
+        setChartSize(chartContainerRef.current.clientWidth, chartContainerRef.current.clientHeight);
+      }
     }
-  }, [stats]);
+
+    window.addEventListener("resize", resizeChart)
+
+    return function() {
+      window.removeEventListener("resize", resizeChart);
+    }
+  }, [])
+
 
   return (
     <>
@@ -148,9 +180,24 @@ function Dashboard() {
           <div className="col-12 col-lg-8">
             <div className="container">
               <div className="row justify-content-md-center">
-                <div className="col-md-12 col-lg-4">
-                  <div className="chart-container mt-2">
-                    <canvas id="chart" ref={chartEl} aria-label="Metric's Graph" role="img"></canvas>
+                <div className="col-12 col-lg-10 mt-2">
+                  <div className="chart-container" ref={chartContainerRef}>
+                  {chartData.length <= 1 ? (
+                    <>
+                    <h2>No data</h2>
+                    <p>Kindly, specify your filters and press Refresh!</p>
+                    </>
+                  ) : (
+                    <Chart
+                      chartType="LineChart"
+                      data={ chartData }
+                      width= { chartSize[0] }
+                      height= { chartSize[1] }
+                      options = { {
+                        theme: 'maximized'
+                      } }
+                    />
+                  )}
                   </div>
                 </div>
               </div>
