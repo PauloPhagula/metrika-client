@@ -7,10 +7,17 @@ import { Chart } from "react-google-charts";
 import config from './config'
 
 function Dashboard() {
+  //
   // Form date helpers
+  //
+
   const defaultFromDate = `${DateTime.now().startOf("day").toFormat("yyyy-MM-dd")}T${DateTime.now().startOf("day").toFormat("T")}`
   const defaultToDate = `${DateTime.now().minus({hour: 1}).toFormat("yyyy-MM-dd")}T${DateTime.now().minus({hour: 1}).toFormat("T")}`;
   const maxDate = `${DateTime.now().toFormat("yyyy-MM-dd")}T${DateTime.now().toFormat("T")}`;
+
+  //
+  // Metric names for form
+  //
 
   const [metricNames, setMetricNames] = useState(["all"]);
 
@@ -25,6 +32,10 @@ function Dashboard() {
         // FIXME: Handle err this request is critical for the component
       })
   }, []);
+
+  //
+  // Fetch stats
+  //
 
   const [stats, setStats] = useState([]);
 
@@ -41,6 +52,10 @@ function Dashboard() {
         setStats(items);
       })
   };
+
+  //
+  // Data crunchying
+  //
 
   const [chartData, setChartData] = useState([])
 
@@ -88,23 +103,28 @@ function Dashboard() {
 
   }, [stats])
 
+  //
+  // Chart sizing
+  //
+
   const chartContainerRef = useRef(null)
-  const [size, setSize] = useState([0, 0]);
+  const [chartSize, setChartSize] = useState([0, 0]);
   useLayoutEffect(() => {
-    function resizeGraph() {
+    function resizeChart() {
       if (chartContainerRef.current === null) {
         return;
       } else {
-        setSize(chartContainerRef.current.clientWidth, chartContainerRef.current.clientHeight);
+        setChartSize(chartContainerRef.current.clientWidth, chartContainerRef.current.clientHeight);
       }
     }
 
-    window.addEventListener("resize", resizeGraph)
+    window.addEventListener("resize", resizeChart)
 
     return function() {
-      window.removeEventListener("resize", resizeGraph);
+      window.removeEventListener("resize", resizeChart);
     }
   }, [])
+
 
   return (
     <>
@@ -160,7 +180,7 @@ function Dashboard() {
           <div className="col-12 col-lg-8">
             <div className="container">
               <div className="row justify-content-md-center">
-                <div className="col-12 col-lg-4 mt-2">
+                <div className="col-12 col-lg-10 mt-2">
                   <div className="chart-container" ref={chartContainerRef}>
                   {chartData.length <= 1 ? (
                     <>
@@ -171,8 +191,8 @@ function Dashboard() {
                     <Chart
                       chartType="LineChart"
                       data={ chartData }
-                      width= { size[0] }
-                      height= { size[1] }
+                      width= { chartSize[0] }
+                      height= { chartSize[1] }
                       options = { {
                         theme: 'maximized'
                       } }
