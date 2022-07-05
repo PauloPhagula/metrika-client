@@ -2,19 +2,15 @@ import React, { useState, useEffect, useRef }  from 'react'
 import { useForm } from "react-hook-form";
 import axios from 'axios';
 import { DateTime } from "luxon";
-// #import Chart from 'chart.js/auto';
-
 import _ from 'lodash';
+import { Chart } from "react-google-charts";
 import config from './config'
-import Graph from './Graph'
 
 function Dashboard() {
   // Form date helpers
   const defaultFromDate = `${DateTime.now().startOf("day").toFormat("yyyy-MM-dd")}T${DateTime.now().startOf("day").toFormat("T")}`
   const defaultToDate = `${DateTime.now().minus({hour: 1}).toFormat("yyyy-MM-dd")}T${DateTime.now().minus({hour: 1}).toFormat("T")}`;
   const maxDate = `${DateTime.now().toFormat("yyyy-MM-dd")}T${DateTime.now().toFormat("T")}`;
-
-  const chartEl = useRef(null);
 
   const [metricNames, setMetricNames] = useState(["all"]);
 
@@ -32,7 +28,7 @@ function Dashboard() {
 
   const [stats, setStats] = useState([]);
 
-  const {register, formState: { errors }, handleSubmit, reset} = useForm()
+  const {register, formState: { errors }, handleSubmit} = useForm()
 
   const onSubmit = (formData) => {
     // HACK: See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#setting_timezones
@@ -46,23 +42,25 @@ function Dashboard() {
       })
   };
 
-  const [googleData, setGoogleData] = useState([])
+  const [chartData, setChartData] = useState([])
 
   useEffect(() => {
-    let rawStats = stats
+    if (stats.length === 0) {
+      return;
+    }
+
+    // TODO: Posssibly use useMemo and useTransition here
+
     let rows = []
     let names = _.map(_.uniqBy(stats, (stat) => stat.name), (value) => value.name)
-    let zeroes = [];
-    for (let i = 0; i < names.length; i++) {
-      zeroes.push(0)
-    }
+    let zeroes =  _.fill([...names], 0)
 
     let statsByX = _.groupBy(stats, (stat) => stat.x)
     _.map(statsByX, (xStat, xStatkey) => {
       let row = _.zipObject(names, zeroes)
       row.x = xStatkey;
       for (let name of names) {
-        let found = _.find(xStat, (o) => o.name == name);
+        let found = _.find(xStat, (o) => o.name === name);
 
         if (found) {
           row[name] = found.y
@@ -86,8 +84,7 @@ function Dashboard() {
     })
 
     let _googleData = [newNames, ...dataset]
-    console.log(_googleData)
-    setGoogleData(_googleData);
+    setChartData(_googleData);
 
   }, [stats])
 
@@ -145,9 +142,21 @@ function Dashboard() {
           <div className="col-12 col-lg-8">
             <div className="container">
               <div className="row justify-content-md-center">
-                <div className="col-md-12 col-lg-4">
+                <div className="col-12 col-lg-4">
                   <div className="chart-container mt-2">
-                    <Graph data={googleData} />
+                  {chartData.length <= 1 ? (
+                    <>
+                    <h2>No data</h2>
+                    <p>Kindly, specify your filters and press Refresh!</p>
+                    </>
+                  ) : (
+                    <Chart
+                      chartType="LineChart"
+                      data={ chartData }
+                      width="100%"
+                      height="400px"
+                    />
+                  )}
                   </div>
                 </div>
               </div>
