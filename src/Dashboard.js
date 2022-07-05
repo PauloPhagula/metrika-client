@@ -1,4 +1,4 @@
-import React, { useState, useEffect }  from 'react'
+import React, { useState, useEffect, useRef, useLayoutEffect }  from 'react'
 import { useForm } from "react-hook-form";
 import axios from 'axios';
 import { DateTime } from "luxon";
@@ -88,6 +88,24 @@ function Dashboard() {
 
   }, [stats])
 
+  const chartContainerRef = useRef(null)
+  const [size, setSize] = useState([0, 0]);
+  useLayoutEffect(() => {
+    function resizeGraph() {
+      if (chartContainerRef.current === null) {
+        return;
+      } else {
+        setSize(chartContainerRef.current.clientWidth, chartContainerRef.current.clientHeight);
+      }
+    }
+
+    window.addEventListener("resize", resizeGraph)
+
+    return function() {
+      window.removeEventListener("resize", resizeGraph);
+    }
+  }, [])
+
   return (
     <>
       <div className="container">
@@ -142,8 +160,8 @@ function Dashboard() {
           <div className="col-12 col-lg-8">
             <div className="container">
               <div className="row justify-content-md-center">
-                <div className="col-12 col-lg-4">
-                  <div className="chart-container mt-2">
+                <div className="col-12 col-lg-4 mt-2">
+                  <div className="chart-container" ref={chartContainerRef}>
                   {chartData.length <= 1 ? (
                     <>
                     <h2>No data</h2>
@@ -153,8 +171,11 @@ function Dashboard() {
                     <Chart
                       chartType="LineChart"
                       data={ chartData }
-                      width="100%"
-                      height="400px"
+                      width= { size[0] }
+                      height= { size[1] }
+                      options = { {
+                        theme: 'maximized'
+                      } }
                     />
                   )}
                   </div>
