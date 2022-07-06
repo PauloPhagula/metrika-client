@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import axios from 'axios';
 import { DateTime } from "luxon";
 import _ from 'lodash';
-import uniq from 'lodash/uniq'
 import { Chart } from "react-google-charts";
 import config from './config'
 
