@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import axios from 'axios';
 import { DateTime } from "luxon";
 import _ from 'lodash';
+import uniq from 'lodash/uniq'
 import { Chart } from "react-google-charts";
 import config from './config'
 
@@ -70,7 +71,7 @@ function Dashboard() {
       return;
     }
 
-    // TODO: Posssibly use useMemo and useTransition here
+    // TODO: Possibly use useMemo and useTransition here
 
     let rows = []
     let names = _.map(_.uniqBy(stats, (stat) => stat.name), (value) => value.name)
@@ -104,9 +105,7 @@ function Dashboard() {
       return result
     })
 
-    let _googleData = [newNames, ...dataset]
-    setChartData(_googleData);
-
+    setChartData([newNames, ...dataset])
   }, [stats])
 
   //

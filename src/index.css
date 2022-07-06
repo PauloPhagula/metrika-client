@@ -8,3 +8,15 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
+
+footer a {
+  text-decoration: none;
+}
+
+.nav-link.active {
+  font-weight: bolder;
+}
+
+.factorial-link {
+  color: rgb(255, 53, 94);
+}
