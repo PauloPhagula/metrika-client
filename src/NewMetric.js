@@ -20,7 +20,6 @@ function NewMetric() {
     axios
       .get(config.API_BASE_URL + "/metric_names" )
       .then((response) => {
-        // FIXME: Something is causing re-render and thus loading of names happening twice, forcing me to use `_.uniq' here,
         setMetricNames((prevMetricNames) => _.uniq([...response.data, ...prevMetricNames]));
       })
       .catch((error) => {

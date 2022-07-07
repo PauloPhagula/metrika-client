@@ -27,7 +27,6 @@ function Dashboard() {
       .get(config.API_BASE_URL + "/metric_names")
       .then((response) => response.data)
       .then((names) => {
-        // FIXME: Something is causing re-render and thus loading of names happens twice, forcing me to use `_.uniq' here,
         setMetricNames((prevMetricNames) => _.uniq([...names, ...prevMetricNames]));
         setShowFetchingNamesWarn(false)
       }).catch((error) => {
