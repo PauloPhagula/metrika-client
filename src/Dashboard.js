@@ -67,6 +67,7 @@ function Dashboard() {
 
   useEffect(() => {
     if (stats.length === 0) {
+      setChartData([])
       return;
     }
 
@@ -210,7 +211,7 @@ function Dashboard() {
                   {chartData.length <= 1 ? (
                     <>
                     <h2>No data</h2>
-                    <p>Kindly, specify your filters and press Refresh!</p>
+                    <p>Kindly, (re)specify your filters and press Refresh!</p>
                     </>
                   ) : (
                     <Chart
