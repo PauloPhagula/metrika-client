@@ -40,7 +40,8 @@ function Dashboard() {
   //
 
   const [stats, setStats] = useState([]);
-  const {register, formState: { errors }, handleSubmit} = useForm()
+  const {register, formState: { errors }, handleSubmit, watch} = useForm()
+  const fromDate = watch("from")
   const [showSubmitWarn, setShowSubmitWarn] = useState(false)
 
   const onSubmit = (formData) => {
@@ -167,9 +168,10 @@ function Dashboard() {
                 <div className='col-12 col-lg-6 mb-3'>
                   <label htmlFor="to" className="form-label">To</label>
                   <input type="datetime-local" id="to" className="form-control" defaultValue={defaultToDate}
-                    {...register("to", { required: true, max: maxDate})} />
+                    {...register("to", { required: true, max: maxDate, validate: (v) => v > fromDate })} />
                   {errors.to?.type === "required" && <div className="invalid-feedback d-block">To is required!</div>}
                   {errors.to?.type === "max" && <div className="invalid-feedback d-block">To time can't be in the future!</div>}
+                  {errors.to?.type === "validate" && <div className="invalid-feedback d-block">To time must be higher than From time!</div>}
                 </div>
 
                 <div className='col-12 col-lg-12 mb-3'>
