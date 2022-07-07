@@ -62,7 +62,7 @@ describe("metrika app", () => {
     cy.get("input[name='to']").type("2022-06-30T00:00")
     cy.contains("Refresh").click()
 
-    cy.wait(500)
+    cy.wait(1000)
 
     cy.get("#reactgooglegraph-1")
       .should("be.visible")
