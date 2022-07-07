@@ -54,7 +54,7 @@ function NewMetric() {
   }, [submittedSuccessfully])
 
   useEffect(() => {
-    var timer;
+    let timer;
 
     if (submittedSuccessfully == null) {
       return;
